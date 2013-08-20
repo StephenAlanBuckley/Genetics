@@ -1,9 +1,11 @@
 import genetics_class
 
-Genetics = genetics_class.Genetics
+something = genetics_class.Genetics()
 
-something = Genetics
+chromey = something.create_chromosome(5, 2)
+other_guy = something.create_chromosome(5, 2)
+kid = something.mate(chromey, other_guy)
 
-something()
-
-print something.create_base_pool(11)
+print chromey 
+print other_guy
+print kid
