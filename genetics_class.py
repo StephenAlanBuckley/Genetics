@@ -37,7 +37,6 @@ class Genetics:
 			crosses.append(random.randint(0,shortest))
 		crosses = sorted(crosses)
 
-		print crosses
 		rand_start = random.randint(0,1)
 		new_chromosome = ''
 		previous = 0
@@ -45,7 +44,17 @@ class Genetics:
 			new_chromosome += parents[(x+rand_start) % 2][previous:crosses[x]]
 			previous = crosses[x]
 			if x == len(crosses)-1:
-				new_chromosome += parents[(x+rand_start) % 2][crosses[x]:] 
+				new_chromosome += parents[(x+rand_start) % 2][crosses[x]:]
+
+		'''
+		This is where mutations need to happen.
+		-# of mutations = multiply length by mutation_pct, divide by 100
+		-figure out the percentage of that number that insertions and deletions are
+		-finish insertions
+		-finish deletions
+		-then do the point swaps by pulling from any point in either parent.
+		'''
+				
 		return new_chromosome
 
 	def create_base_pool(self, base):
