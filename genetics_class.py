@@ -28,7 +28,7 @@ class Genetics:
 		AABBAABBBB  (50% of the time)
 		BBAABBAAAA  (50% of the time)
 	'''
-	def mate(self, chromosome1, chromosome2):
+	def mate(self, chromosome1, chromosome2, mutation_pct = 0, insertion_pct = 0, deletion_pct = 0):
 		shortest = len(chromosome1) if (len(chromosome1) < len(chromosome2)) else len(chromosome2)
 		parents = [chromosome1, chromosome2]
 
@@ -54,6 +54,29 @@ class Genetics:
 		-finish deletions
 		-then do the point swaps by pulling from any point in either parent.
 		'''
+		number_of_mutations = (len(new_chromosome) * (mutation_pct))/100
+		inserts_plus_deletes = insertion_pct + deletion_pct
+		if inserts_plus_deletes > 100:
+			insertion_pct = (insertion_pct*100/inserts_plus_deletes)
+			deletion_pct = (deletion_pct*100/inserts_plus_deletes)
+
+		number_of_inserts = (number_of_mutations * insertion_pct)/100
+		number_of_deletions = (number_of_mutations * deletion_pct)/100
+
+		for x in range(0,number_of_inserts):
+			point_in_question = random.randint(0,len(new_chromosome)-1)
+			which_parent = parents[random.randint(0,1)]
+			new_chromosome = new_chromosome[:point_in_question] + which_parent[random.randint(0,len(which_parent)-1)] + new_chromosome[point_in_question:]
+
+		for x in range(0,number_of_deletions):
+			point_in_question = random.randint(1, len(new_chromosome)-1)
+			new_chromosome = new_chromosome[:point_in_question-1] + new_chromosome[point_in_question:]
+
+		if number_of_mutations - (number_of_inserts + number_of_deletions):
+			for x in range(0, number_of_mutations):
+				point_in_question = random.randint(1,len(new_chromosome)-1)
+				which_parent = parents[random.randint(0,1)]
+				new_chromosome = new_chromosome[:point_in_question-1] + which_parent[random.randint(0,len(which_parent)-1)] + new_chromosome[point_in_question:]
 				
 		return new_chromosome
 
