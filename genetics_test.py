@@ -2,8 +2,8 @@ import genetics_class
 
 something = genetics_class.Genetics()
 
-chromey = something.create_chromosome(5, 2)
-other_guy = something.create_chromosome(5, 2)
+chromey = something.create_chromosome(30, 5)
+other_guy = something.create_chromosome(30, 5)
 kid = something.mate(chromey, other_guy)
 
 print chromey 
