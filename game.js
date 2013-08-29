@@ -5,12 +5,14 @@ canvas.width = 512;
 canvas.height = 480;
 document.body.appendChild(canvas);
 
-var world = new Object();
+//time to do some defining up here!
 
 //base class
 function GamePiece(){
 	this.x = 0;
 	this.y = 0;
+	this.width = 0;
+	this.height =0;
 	this.ready = true;
 	this.image = new Image();
 	this.collisionType = 'background';
@@ -20,11 +22,40 @@ function GamePiece(){
 	this.yMove = function(distance) {
 		this.y += distance;
 	}
+	this.addSource = function(source) {
+		this.image.src = source;
+		this.width = image.width;
+		this.height = image.height;
+	}
 }
 
-GamePiece.prototype.add_source = function(source) {
-	this.image.src = source;
+function Organism(){
+	GamePiece.call(this);
 }
+Organism.prototype = new GamePiece();
+Organism.prototype.constructor = GamePiece();
+Organism.prototype.foodValue = 0;
+Organism.prototype.hunger = 0;
+Organism.prototype.health = 0;
+Organism.prototype.defense = 0;
+Organism.prototype.offense = 0;
+Organism.prototype.speed = 0;
+Organism.prototype.sensitivity = 0;
+Organism.prototype.species = 0;
+Organism.prototype.chromosome = '';
+Organism.prototype.collideWith = function(type){};
+
+/*
+To do:
+-Make all Monsters into Organisms
+-Make the world variable
+-Make the AJAX for the chromosomes and mating (use php for now)
+-Make a function which sorts the survivors and then kills off the other assholes.
+-Think about the size and scope of the world.  And how animals come to be in it.
+-Think about objects like a house and trees which aren't backgrounds!
+*/
+
+var world = new Object();
 
 function Character(){
 	GamePiece.call(this);
