@@ -44,18 +44,22 @@ Organism.prototype.sensitivity = 0;
 Organism.prototype.species = 0;
 Organism.prototype.chromosome = '';
 Organism.prototype.collideWith = function(type){};
+Organism.prototype.update = function(modifier){};
 
 /*
 To do:
--Make all Monsters into Organisms
 -Make the world variable
+	-handle all collisions generically
+	-Make an array called collidables (or some such shit)
+	-every world update, spatially map all of those collidables
+	-check each collision box against its 8 corresponding collision boxes (I feel like this should be lower?)
+	-compare all of those against eachother, calling the collideWith function as necessary
+	-call update on all remaining collidables
 -Make the AJAX for the chromosomes and mating (use php for now)
 -Make a function which sorts the survivors and then kills off the other assholes.
 -Think about the size and scope of the world.  And how animals come to be in it.
 -Think about objects like a house and trees which aren't backgrounds!
 */
-
-var world = new Object();
 
 function Character(){
 	GamePiece.call(this);
@@ -66,22 +70,12 @@ Character.prototype.constructor = GamePiece;
 Character.prototype.speed = 0;
 Character.prototype.update = function(modifier){};
 
-
-var BackGround = new GamePiece();
-BackGround.add_source("images/background.png");
-
-var Hero = new Character();
-Hero.add_source("images/hero.png");
-Hero.speed = 256;
-
-world.player = Hero;
-
 function Monster(){
-	Character.call(this);
+	Organism.call(this);
 }
 
-Monster.prototype = new Character();
-Monster.prototype.constructor = Character;
+Monster.prototype = new Organism();
+Monster.prototype.constructor = Organism;
 Monster.prototype.sensitivity = 100;
 Monster.prototype.update = function(modifier) {
 	if (Math.abs(world.player.x - this.x) < this.sensitivity && Math.abs(world.player.y - this.y) < this.sensitivity) {
@@ -93,12 +87,23 @@ Monster.prototype.update = function(modifier) {
 	}
 }
 
+var world = new Object();
+
+var BackGround = new GamePiece();
+BackGround.addSource("images/background.png");
+
+var Hero = new Character();
+Hero.addSource("images/hero.png");
+Hero.speed = 256;
+
+world.player = Hero;
+
 var monsters = [];
 world.monsters = monsters;
 
 for (var i = 10; i >= 0; i--) {
 	var monster = new Monster();
-	monster.add_source("images/monster.png");
+	monster.addSource("images/monster.png");
 	monster.speed = Math.random() * 300;
 	// Throw the monster somewhere on the screen randomly
 	monster.x = 32 + (Math.random() * (canvas.width - 64));
@@ -155,6 +160,7 @@ var update = function (modifier) {
 
 	// Are they touching?
 	if (monsters.length-1 >=0){
+		//If they collide then deal with that, otherwise update monster style
 		for (var i = monsters.length - 1; i >= 0; i--) {
 			if (
 			Hero.x <= (monsters[i].x + monsters[i].image.width)
@@ -162,7 +168,7 @@ var update = function (modifier) {
 			&& Hero.y <= (monsters[i].y + monsters[i].image.height)
 			&& monsters[i].y <= (Hero.y + Hero.image.height)
 		) {
-			monsters.splice(i, 1);
+			monsters.splice(i, 1); //remove one monster from the array at index i
 			++monstersCaught;
 			continue;
 		} else {
