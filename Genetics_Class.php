@@ -1,86 +1,90 @@
 <?php
-//Let's make a super simple little PHP GA for fun and more fun!
-
 /*
-In order to make this a usable class, I'm going to try to make it a simple idea.
-	-Genetics is a place to store and combine chromosomes
+	Genetics is a place to combine chromosomes
 	-It doesn't care what mechanism chose the two chromosomes to mate
-	-It will be seeded with a random chromosome of base X
-	-It will have a public function mate() which will accept another Genetics object which will crossover the two
+	-It can create random chromosomes of any base up to 36
+	-It will have a public function mate() which will accept two chromosomes and perform crossover and mutation
 	-A separate class should be made to interpret the chromosome
 */
 
 class Genetics {
-	public $chromosome;
-
 
 	/*
 	Populates the chromosome with a string of length $length with $base different characters
 	*/
-	public function from_scratch($length, $base) {
-		$pool = $this->create_base_pool($base);
+	public static function createChromosome($length = 100, $base = 10) {
+		$pool = Genetics::create_base_pool($base);
+
 		for ($i=0; $i<$length; $i++) {
-			$this->chromosome .= $pool[rand(0, count($pool)-1)];
+			$chromosome .= $pool[rand(0, count($pool)-1)];
 		}
+
+    return $chromosome;
 	}
 
-	public function mate($sexy_partner, $mutation_pct=0, $insertion_pct=0, $deletion_pct=0){
+	public static function mate($base_partner, $sexy_partner, $mutation_pct=0, $insertion_pct=0, $deletion_pct=0) {
 		$new_chromosome = '';
 
 		//First we find which is shorter
-		$min_length = (strlen($this->chromosome) <= strlen($sexy_partner->chromosome)) ? strlen($this->chromosome) : strlen($sexy_partner->chromosome);
-		$parents_dna = array(
-			"$this->chromosome",
-			"$sexy_partner->chromosome"
-			);
-		//Set the chromosome to be the longer of the two chromosomse, or the partner's if they're the same length
-		$new_chromosome = $parents_dna[rand(0,1)];
+		$min_length = (strlen($base_partner) <= strlen($sexy_partner)) ? strlen($base_partner) : strlen($sexy_partner);
 
-		//If they put in 95 and 95, then we would have some weird problems below that we solve by making a ratio of the two
-		if(($nonconservative_tot = $insertion_pct + $deletion_pct) > 100) {
-			$insertion_pct = floor((100/$nonconservative_tot) * $insertion_pct);
-			$deletion_pct = floor((100/$nonconservative_tot) * $deletion_pct);
+        //Turn them into strings explicitly, just in case
+		$parents_dna = array(
+                "$base_partner",
+                "$sexy_partner"
+        );
+
+		//It doesn't make sense to have a mutation rate greater than 100%
+        //If that's the case, we simply make a ration of the two types of mutation
+		if(($nonconservative_total = $insertion_pct + $deletion_pct) > 100) {
+            $insertion_pct = floor((100/$nonconservative_total) * $insertion_pct);
+            $deletion_pct = floor((100/$nonconservative_total) * $deletion_pct);
 		}
 
 		$insertions = array();
 		$deletions = array();
 
-		for($i=0; $i < strlen($new_chromosome); $i++) {
+        //We treat the parent dna's as tracks which we shift along
+        $track = 0;
 
-			//We only want to do crossover while we have both genomes available- if one is longer than the other then the tail should be intact except for
-			//mutations!
-			if($i < $min_length) {
-				//We don't want constant crossover, we want about 15-35% (According to my likely misreading of Stanhope and Daida)
-				//The thing is, 50% of the time we're going to be pulling our random_parent_chunk from the parent that $new_chromosome is already set to!
-				//So I chose 50% of 50%, which is the middle of the 15-35% range I was aiming for
-				if(rand(1,100) < 50) {
-					$random_parent_chunk = substr($parents_dna[rand(0,1)], $i, 1);
-					$new_chromosome = substr_replace($new_chromosome, $random_parent_chunk, $i, 1);
-				}
-			}
+		for($i=0; $i < strlen($parents_dna[$track]); $i++) {
+            //We only want to do crossover while we have both genomes available- if one is longer than the other then the tail should be intact except for
+            //mutations!
+            if($i < $min_length) {
+                $new_chromosome .= substr($parents_dna[$track], $i, 1);
+                //We don't want constant crossover, we want about 15-35% (According to my likely misreading of Stanhope and Daida)
+                //On average that's 25% so I just tossed that in
+                if(rand(1,100) < 25) {
+                    $track = ($track === 0) ? 1 : 0;
+                }
+            }
 
-			//If they specify a mutation rate, we wanna do some mutating!
-			if(rand(1,100) <= $mutation_pct) {
-				//I was previously using the mutation chance as seed, but then a mutation chance lower than insertion and deletion leads to problems!
-				$seed = rand(1,100);
-				//Since we don't know what base either of the parents' chromosomes are in and I refuse to make messy limitations, we have a different plan.
-				//Even if we don't know what base we're in, we know that the chromsomes must be bounded by SOME base
-				//So we just grab a random character in a random parent and then we use that!
-				$random_parent = $parents_dna[rand(0,1)];
-				$random_parent_chunk = substr($random_parent, rand(0,strlen($random_parent)-1), 1);
-				$new_chromosome = substr_replace($new_chromosome, $random_parent_chunk, $i, 1);
-				if ($seed <= $insertion_pct) {
-					$random_parent = $parents_dna[rand(0,1)];
-					$random_parent_chunk = substr($random_parent, rand(0,strlen($random_parent)-1), 1);
-					$insertions[] = array(
-						'pos' => $i,
-						'val' => $random_parent_chunk
-						);
-				} elseif ($seed <= ($insertion_pct + $deletion_pct)) {
-					$deletions[] = $i;
-				}
-			}
-		}
+            //If they specify a mutation rate, we wanna do some mutating!
+            if(rand(1,100) <= $mutation_pct) {
+                //I was previously using the mutation chance as seed, but then a mutation chance lower than insertion and deletion leads to problems!
+                $seed = rand(1,100);
+                if ($seed <= $insertion_pct) {
+                    //Insertion Mutation
+                    $random_parent = $parents_dna[rand(0,1)];
+                    $random_parent_chunk = substr($random_parent, rand(0,strlen($random_parent)-1), 1);
+                    $insertions[] = array(
+                        'pos' => $i,
+                        'val' => $random_parent_chunk
+                    );
+                } elseif ($seed <= ($insertion_pct + $deletion_pct)) {
+                    //Deletion Mutation
+                    $deletions[] = $i;
+                } else {
+                    //Point Mutation
+                    //Since we don't know what base either of the parents' chromosomes are in and I refuse to make messy limitations, we have a different plan.
+                    //Even if we don't know what base we're in, we know that the chromsomes must be bounded by SOME base
+                    //So we just grab a random character in a random parent and then we use that!
+                    $random_parent = $parents_dna[rand(0,1)];
+                    $random_parent_chunk = substr($random_parent, rand(0,strlen($random_parent)-1), 1);
+                    $new_chromosome = substr_replace($new_chromosome, $random_parent_chunk, $i, 1);
+                }
+            }
+        }
 
 		/*
 		so in order to handle insertions and deletions we're gonna need to do some crazy shit:
@@ -97,22 +101,21 @@ class Genetics {
 		-Do the same for deletion!
 		*/
 
+        //changed position keeps track of how adding or subtracting characters changes each characters' index
 		$changed_position = 0;
 		foreach($insertions as $add) {
-			//Since this replaces the 0 characters after that index, it just inserts it!
+			//Since this replaces the 0 characters after that index, it just inserts it! PHP logic
 			$position = (($add['pos'] + $changed_position) >= (strlen($new_chromosome)-1)) ? 1 : ($add['pos'] + $changed_position);
 			$new_chromosome = substr_replace($new_chromosome, $add['val'], $position, 0);
 			$changed_position++;
 		}
+
 		foreach($deletions as $del) {
 			$new_chromosome = substr_replace($new_chromosome, '', $del + $changed_position, 1);
 			$changed_position--;
 		}
 
-		$kid = new Genetics;
-		$kid->chromosome = $new_chromosome;
-
-		return $kid;	
+		return $new_chromosome;
 	}
 
 	private function create_base_pool($base){
@@ -122,7 +125,7 @@ class Genetics {
 			'1'
 			);
 
-		//Setting a hard limit of base 36.  
+		//Setting a hard limit of base 36.
 		//Shouldn't affect functionality since any information can be encoded to any base.
 		if ($base > 36){
 			$base = 36;

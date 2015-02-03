@@ -11,33 +11,37 @@
 require 'Genetics_class.php';
 
 $my_shit = new Genetics;
-$create_start = microtime(true);
 $my_shit->from_scratch(3500, 30);
-$create_end = microtime(true);
-
-$create_duration = ($create_end - $create_start) * 1000;
 
 $other_seed = new Genetics;
 $other_seed->from_scratch(3500, 30);
 
-$generations = 1;
 $generation_durations = array();
-while($generations < 1000) {
-	$current_gen = array();
-  $gen_start = microtime(true);
-	for ($i=0; $i<2; $i++) {
-		$current_gen[] = $my_shit->mate($other_seed);
-	}
-  $gen_end = microtime(true);
-  $generation_durations[] = ($gen_end - $gen_start) * 1000;
-	$my_shit = $current_gen[0]; 
-	$other_seed = $current_gen[1];
-	$generations++;
+$average_genome_length = array();
+for ($generations = 1; $generations < 1000; $generations++) {
+    $current_gen = array();
+    $gen_start = microtime(true);
+    for ($i=0; $i<2; $i++) {
+        $current_gen[] = $my_shit->mate($other_seed, 30, 29, 1);
+    }
+    $gen_end = microtime(true);
+    $this_generation_duration = ($gen_end - $gen_start) * 1000;
+    $generation_durations[] = $this_generation_duration;
+    $this_generation_total_length = 0;
+    $this_generation_population = 0;
+    foreach ($current_gen as $creature) {
+        $this_generation_total_length += strlen($creature->chromosome);
+        $this_generation_population += 1;
+    }
+    $this_generation_average_length = $this_generation_total_length / $this_generation_population;
+    $average_genome_length[] = $this_generation_average_length;
+
+    print_r("$this_generation_average_length || $this_generation_duration\n");
+
+    $my_shit = $current_gen[0];
+    $other_seed = $current_gen[1];
 }
 
 
-print_r($generation_durations);
-
-print_r("Creation duration: $create_duration seconds");
-
+print_r("\n");
 ?>
