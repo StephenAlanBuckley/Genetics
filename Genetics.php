@@ -93,7 +93,7 @@ class Genetics {
 		-Have it keep position and character to be inserted
 		-After we're done with our standard crossover and mutations:
 			-iterate over this insertion array and insert the characters in the positions in the $new_chrom
-			-of course, they'll already be in the order that they should be inserted in, phew!
+			-because I generated them in the for loop above, they'll already be in the order that they should be inserted in, phew!
 			-don't forget to keep an increment to add to where to insert
 				-if I have to add in 1 and 3, then after I add the 1 the 3 should be in the 4 slot, not the 3 slot
 				-you feel me, dawg?
@@ -101,10 +101,9 @@ class Genetics {
 		-Do the same for deletion!
 		*/
 
-        //changed position keeps track of how adding or subtracting characters changes each characters' index
 		$changed_position = 0;
 		foreach($insertions as $add) {
-			//Since this replaces the 0 characters after that index, it just inserts it! PHP logic
+			//Since this replaces 0 characters after that index, it just inserts it! PHP logic
 			$position = (($add['pos'] + $changed_position) >= (strlen($new_chromosome)-1)) ? 1 : ($add['pos'] + $changed_position);
 			$new_chromosome = substr_replace($new_chromosome, $add['val'], $position, 0);
 			$changed_position++;
