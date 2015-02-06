@@ -4,7 +4,7 @@
 	-It doesn't care what mechanism chose the two chromosomes to mate
 	-It can create random chromosomes of any base up to 36
 	-It will have a public function mate() which will accept two chromosomes and perform crossover and mutation
-	-A separate class should be made to interpret the chromosome
+	-A separate class should be made to interpret the genome
 */
 
 class Genetics {
@@ -18,15 +18,14 @@ class Genetics {
 		for ($i=0; $i<$length; $i++) {
 			$chromosome .= $pool[rand(0, count($pool)-1)];
 		}
-
-    return $chromosome;
+        return $chromosome;
 	}
 
-	public static function mate($base_partner, $sexy_partner, $mutation_pct=0, $insertion_pct=0, $deletion_pct=0) {
+	public static function mate($base_partner, $sexy_partner, $mutation_pct = 0, $insertion_pct = 0, $deletion_pct = 0) {
 		$new_chromosome = '';
 
-		//First we find which is shorter
-		$min_length = (strlen($base_partner) <= strlen($sexy_partner)) ? strlen($base_partner) : strlen($sexy_partner);
+		//First we find the minimum length of a parent's genome
+		$min_length =  min(strlen($base_partner), strlen($sexy_partner));
 
         //Turn them into strings explicitly, just in case
 		$parents_dna = array(
@@ -44,17 +43,18 @@ class Genetics {
 		$insertions = array();
 		$deletions = array();
 
-        //We treat the parent dna's as tracks which we shift along
+        //We treat the parent dna's as tracks which we shift back and forth between
         $track = 0;
 
+        //Is it a problem that when we shift tracks we could go out of the range of this for loop?
 		for($i=0; $i < strlen($parents_dna[$track]); $i++) {
-            //We only want to do crossover while we have both genomes available- if one is longer than the other then the tail should be intact except for
-            //mutations!
+            //We only want to do crossover while we have both genomes available; mutations at the end are acceptable
             if($i < $min_length) {
                 $new_chromosome .= substr($parents_dna[$track], $i, 1);
+
                 //We don't want constant crossover, we want about 15-35% (According to my likely misreading of Stanhope and Daida)
-                //On average that's 25% so I just tossed that in
                 if(rand(1,100) < 25) {
+                    //Switch reading from one to the other parent
                     $track = ($track === 0) ? 1 : 0;
                 }
             }

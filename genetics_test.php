@@ -1,12 +1,20 @@
 <?php
-require 'Genetics_class.php';
+require 'Genetics.php';
 
-$mom = Genetics::createChromosome();
-print_r("Mom: $mom\n");
+if (test_basic_mating_produces_correct_length()){
+    print_r("Basic Mating produces correct length.\n");
+} else {
+    print_r("FAIL: Basic Mating Failed to produce correct length.\n");
+}
 
-$dad = Genetics::createChromosome();
-print_r("Dad: $dad\n");
+function test_basic_mating_produces_correct_length() {
+    $mom = '0472669210828649250769557889033171337358341215131107163841854261305041975106610731557932028545785299';
+    $dad = '3879076696437085928046591277567854852421165973575370039267013708284536743240598135249165976256175528';
 
-$kid = Genetics::mate($mom, $dad);
+    $kid = Genetics::mate($mom, $dad);
 
-print_r("Kid: $kid\n");
+    if (strlen($kid) == strlen($mom)) {
+        return true;
+    }
+    return false;
+}
