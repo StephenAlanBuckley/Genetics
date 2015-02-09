@@ -13,7 +13,7 @@ class Genetics {
 	Populates the chromosome with a string of length $length with $base different characters
 	*/
 	public static function createChromosome($length = 100, $base = 10) {
-		$pool = Genetics::create_base_pool($base);
+		$pool = Genetics::createBasePool($base);
 
 		for ($i=0; $i<$length; $i++) {
 			$chromosome .= $pool[rand(0, count($pool)-1)];
@@ -59,7 +59,6 @@ class Genetics {
                 }
             }
 
-            //If they specify a mutation rate, we wanna do some mutating!
             if(rand(1,100) <= $mutation_pct) {
                 //I was previously using the mutation chance as seed, but then a mutation chance lower than insertion and deletion leads to problems!
                 $seed = rand(1,100);
@@ -76,7 +75,6 @@ class Genetics {
                     $deletions[] = $i;
                 } else {
                     //Point Mutation
-                    //Since we don't know what base either of the parents' chromosomes are in and I refuse to make messy limitations, we have a different plan.
                     //Even if we don't know what base we're in, we know that the chromsomes must be bounded by SOME base
                     //So we just grab a random character in a random parent and then we use that!
                     $random_parent = $parents_dna[rand(0,1)];
@@ -86,25 +84,10 @@ class Genetics {
             }
         }
 
-		/*
-		so in order to handle insertions and deletions we're gonna need to do some crazy shit:
-
-		-Keep an array of insertions
-		-Have it keep position and character to be inserted
-		-After we're done with our standard crossover and mutations:
-			-iterate over this insertion array and insert the characters in the positions in the $new_chrom
-			-because I generated them in the for loop above, they'll already be in the order that they should be inserted in, phew!
-			-don't forget to keep an increment to add to where to insert
-				-if I have to add in 1 and 3, then after I add the 1 the 3 should be in the 4 slot, not the 3 slot
-				-you feel me, dawg?
-
-		-Do the same for deletion!
-		*/
-
 		$changed_position = 0;
 		foreach($insertions as $add) {
-			//Since this replaces 0 characters after that index, it just inserts it! PHP logic
 			$position = (($add['pos'] + $changed_position) >= (strlen($new_chromosome)-1)) ? 1 : ($add['pos'] + $changed_position);
+			//Since this replaces 0 characters after that index, it just inserts it! PHP logic
 			$new_chromosome = substr_replace($new_chromosome, $add['val'], $position, 0);
 			$changed_position++;
 		}
@@ -117,7 +100,65 @@ class Genetics {
 		return $new_chromosome;
 	}
 
-	private function create_base_pool($base){
+    public static function createGenerationFromPopulation($population, $generation_size, $mutation_pct = 0, $insertion_pct = 0, $deletion_pct = 0) {
+        //Option for exhaustive generation- every genome pairs with every other.
+        //Is that option feasible for large populations? I think it is really really not.
+        $generation = array();
+        $weight_info = Genetics::assignWeightsToPopulation($population);
+        $population = $weight_info["population"];
+        $weight_sum = $weight_info["weight_sum"];
+        for ($i = 0; $i < $generation_size; $i++) {
+            $seed_mom = rand(1, $weight_sum);
+            $seed_dad = rand(1, $weight_sum);
+
+            //Find the mom
+            $index = -1; //So the first check is 0
+            while ($seed_mom > 0) {
+              $index++;
+              $seed_mom -= $population[$index]["weight"];
+            }
+            $mom = $population[$index]["genome"];
+
+            //Find the dad
+            $index = -1; //"zero" it out again
+            while ($seed_dad > 0) {
+              $index++;
+              $seed_dad -= $population[$index]["weight"];
+            }
+            $dad = $population[$index]["genome"];
+
+            $kid = Genetics::mate($mom, $dad, $mutation_pct, $insertion_pct, $deletion_pct);
+            $generation[] = $kid;
+
+        }
+        return $generation;
+    }
+
+    private function assignWeightsToPopulation($population) {
+        $weight_sum = 0;
+        $organisms_without_weight = array();
+        $count = 0;
+        foreach ($population as $organism) {
+            if (array_key_exists("weight", $organism)) {
+                $weight_sum += $organism["weight"];
+            } else {
+                $organisms_without_weight[] = $count;
+            }
+            $count++;
+        }
+        $average_weight = $weight_sum / count($population);
+
+        if (!empty($organisms_without_weight)) {
+            foreach($organsms_without_weight as $index) {
+                $population[$index]["weight"] = $average_weight;
+                $weight_sum += $average_weight;
+            }
+        }
+
+        return array("population" => $population, "weight_sum" => $weight_sum);
+    }
+
+	private function createBasePool($base){
 		//At the minimum, the base pool is base 2
 		$base_pool = array(
 			'0',
@@ -130,7 +171,7 @@ class Genetics {
 			$base = 36;
 		}
 
-		for ($i = 2; $i<$base; $i++) {
+		for ($i = 2; $i < $base; $i++) {
 			if ($i < 10) {
 				$base_pool[] = "$i";
 			} else {

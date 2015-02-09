@@ -60,5 +60,23 @@ function test_deletion_deletes_correct_amount() {
     } else {
         return false;
     }
+}
 
+function test_create_generaton_from_population() {
+    $mom = '0472669210828649250769557889033171337358341215131107163841854261305041975106610731557932028545785299';
+    $dad = '3879076696437085928046591277567854852421165973575370039267013708284536743240598135249165976256175528';
+    $kid = '0472069216437085920746591277033171337358361275575107139841854701384536973240610731249162028556185229A';
+    $population = array();
+    $population[] = array("genome" => $mom, "weight" => 100);
+    $population[] = array("genome" => $dad, "weight" => 100);
+    $population[] = array("genome" => $kid, "weight" => 100);
+    $generation_size = 10000;
+    $generation = Genetics::createGenerationFromPopulation($population, $generation_size);
+    $total_length = 0;
+    $longest = 0;
+    foreach ($generation as $organism) {
+        $total_length += strlen($organism);
+        $longest = max($longest, strlen($organism));
+        print_r("\n" . strlen($organism));
+    }
 }
