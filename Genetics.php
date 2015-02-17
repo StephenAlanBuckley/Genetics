@@ -3,7 +3,8 @@
 	Genetics is a place to combine chromosomes
 	-It doesn't care what mechanism chose the two chromosomes to mate
 	-It can create random chromosomes of any base up to 36
-	-It will have a public function mate() which will accept two chromosomes and perform crossover and mutation
+	-It can accept two chromosomes and perform crossover and mutation
+    -It can accept an array of a weighted population and return the next generation
 	-A separate class should be made to interpret the genome
 */
 
@@ -136,19 +137,17 @@ class Genetics {
 
     private function assignWeightsToPopulation($population) {
         $weight_sum = 0;
-        $organisms_without_weight = array();
-        $count = 0;
-        foreach ($population as $organism) {
-            if (array_key_exists("weight", $organism)) {
-                $weight_sum += $organism["weight"];
+        $indexes_without_weight = array();
+        for ($i = 0; $i < count($population); $i++) {
+            if (array_key_exists("weight", $population[$i])) {
+                $weight_sum += $population[$i]["weight"];
             } else {
-                $organisms_without_weight[] = $count;
+                $indexes_without_weight[] = $i;
             }
-            $count++;
         }
         $average_weight = $weight_sum / count($population);
 
-        if (!empty($organisms_without_weight)) {
+        if (!empty($indexes_without_weight)) {
             foreach($organsms_without_weight as $index) {
                 $population[$index]["weight"] = $average_weight;
                 $weight_sum += $average_weight;
