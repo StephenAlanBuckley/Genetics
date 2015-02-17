@@ -6,6 +6,11 @@
 	-It can accept two chromosomes and perform crossover and mutation
     -It can accept an array of a weighted population and return the next generation
 	-A separate class should be made to interpret the genome
+
+    TODO:
+    Many of these functions scale poorly- particularly mating.
+    Find out what mating scales by, and how quickly
+    Make maximum accepted values for all functions, based on average computing time
 */
 
 class Genetics {
@@ -21,6 +26,14 @@ class Genetics {
 		}
         return $chromosome;
 	}
+
+    public static function createPopulation($population_size = 100, $chromosome_length = 100, $chromosome_base = 10) {
+        $population = array();
+        for ($i = 0 $i < $population_size; $i++) {
+            $population[] = Genetics::createChromosome($chromosome_length, $chromosome_base);
+        }
+        return $population;
+    }
 
 	public static function mate($base_partner, $sexy_partner, $mutation_pct = 0, $insertion_pct = 0, $deletion_pct = 0) {
 		$new_chromosome = '';
