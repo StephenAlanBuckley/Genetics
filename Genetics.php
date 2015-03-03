@@ -29,7 +29,7 @@ class Genetics {
 
     public static function createPopulation($population_size = 100, $chromosome_length = 100, $chromosome_base = 10) {
         $population = array();
-        for ($i = 0 $i < $population_size; $i++) {
+        for ($i = 0; $i < $population_size; $i++) {
             $population[] = Genetics::createChromosome($chromosome_length, $chromosome_base);
         }
         return $population;
